@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -8,6 +9,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final TextEditingController secondsController = TextEditingController();
   int numberExt = 0;
   bool isCounting = false;
@@ -33,13 +35,54 @@ class _HomeState extends State<Home> {
       setState(() {
         isCounting = false;
       });
+
+      if (numberExt == target) {
+        _showNotification("$numberExt Detik", "Notifikasi Timer");
+      }
     }
+  }
+
+  Future<void> _initNotification() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings initializationSettings =
+    InitializationSettings(android: initializationSettingsAndroid);
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  Future<void> _showNotification(String titleNotif, String descNotif) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails(
+      'your_channel_id',
+      'your_channel_name',
+      channelDescription: 'your_channel_description',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+    NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      titleNotif,
+      descNotif,
+      platformChannelSpecifics,
+    );
   }
 
   @override
   void dispose() {
     secondsController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    _initNotification();
+    super.initState();
   }
 
   @override
